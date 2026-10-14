@@ -1,0 +1,24 @@
+{
+  "name": "lei022-modulo-grpc",
+  "version": "1.0.0",
+  "description": "LEI022 - Aula 4: Servidor e Cliente gRPC com Protocol Buffers e Postman",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test:client": "node client_test.js",
+    "challenges": "node server_solucao_desafios.js"
+  },
+  "keywords": [
+    "grpc",
+    "protobuf",
+    "proto3",
+    "lei022",
+    "postman"
+  ],
+  "author": "LEI022 - Docentes",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.12.5",
+    "@grpc/proto-loader": "^0.7.13"
+  }
+}

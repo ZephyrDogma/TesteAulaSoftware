@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package academico;
+
+// ============================================================================
+// LEI022 — Aula 4: Contrato de Serviço gRPC (Protocol Buffers v3)
+// ============================================================================
+
+service AvaliacaoService {
+  // --------------------------------------------------------------------------
+  // 1. Unary RPC (1 Pedido -> 1 Resposta)
+  // --------------------------------------------------------------------------
+  rpc SubmeterNota (SubmeterNotaRequest) returns (SubmeterNotaResponse);
+  rpc ObterPerfil (PerfilRequest) returns (PerfilResponse);
+
+  // --------------------------------------------------------------------------
+  // 2. Server Streaming (1 Pedido -> Fluxo de Respostas)
+  // --------------------------------------------------------------------------
+  rpc MonitorizarLocalizacao (BusRequest) returns (stream Coordenada);
+
+  // --------------------------------------------------------------------------
+  // 3. Client Streaming (Fluxo de Pedidos -> 1 Resposta Resumo)
+  // --------------------------------------------------------------------------
+  rpc EnviarLogs (stream LogEntry) returns (LogSummary);
+
+  // --------------------------------------------------------------------------
+  // 4. Bidirectional Streaming (Fluxo Bidirecional Interativo em Simultâneo)
+  // --------------------------------------------------------------------------
+  rpc CanalChat (stream Mensagem) returns (stream Mensagem);
+}
+
+// ----------------------------------------------------------------------------
+// Mensagens: SubmeterNota (Unary)
+// As tags numéricas (= 1, = 2, = 3) identificam os campos no formato binário.
+// NÃO são valores por defeito!
+// ----------------------------------------------------------------------------
+message SubmeterNotaRequest {
+  string aluno_id = 1;
+  string disciplina_code = 2;
+  double nota = 3;
+}
+
+message SubmeterNotaResponse {
+  bool sucesso = 1;
+  string mensagem = 2;
+}
+
+// ----------------------------------------------------------------------------
+// Mensagens: ObterPerfil (Unary)
+// ----------------------------------------------------------------------------
+message PerfilRequest {
+  string nif = 1;
+}
+
+message PerfilResponse {
+  string nome = 1;
+  string departamento = 2;
+}
+
+// ----------------------------------------------------------------------------
+// Mensagens: MonitorizarLocalizacao (Server Streaming)
+// ----------------------------------------------------------------------------
+message BusRequest {
+  string autocarro_id = 1;
+}
+
+message Coordenada {
+  double latitude = 1;
+  double longitude = 2;
+  int64 timestamp = 3;
+}
+
+// ----------------------------------------------------------------------------
+// Mensagens: EnviarLogs (Client Streaming)
+// ----------------------------------------------------------------------------
+message LogEntry {
+  string origem = 1;
+  string mensagem = 2;
+  int64 timestamp = 3;
+}
+
+message LogSummary {
+  int32 recebidos = 1;
+  string mensagem = 2;
+}
+
+// ----------------------------------------------------------------------------
+// Mensagens: CanalChat (Bidirectional Streaming)
+// ----------------------------------------------------------------------------
+message Mensagem {
+  string utilizador = 1;
+  string texto = 2;
+}
