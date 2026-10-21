@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEI022 - Aula 5: Laboratório de APIs Assíncronas</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --border: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --accent: #8b5cf6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            line-height: 1.5;
+        }
+        header {
+            max-width: 1400px;
+            margin: 0 auto 20px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        .badge {
+            background: #3b82f6;
+            color: white;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .header-actions { display: flex; gap: 10px; }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        button:hover { background: var(--primary-dark); }
+        button.btn-success { background: var(--success); }
+        button.btn-danger { background: var(--danger); }
+        button.btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        button.btn-outline:hover { background: var(--border); }
+
+        
+        .order-control {
+            max-width: 1400px;
+            margin: 0 auto 20px;
+            background: #1e293b;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            align-items: center;
+        }
+        .order-status {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+        .status-prep { background: #d97706; color: white; }
+        .status-exp { background: #059669; color: white; }
+
+        
+        .mechanisms-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            height: 520px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            background: #0f172a;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+        .metric-value { font-weight: bold; color: #38bdf8; }
+        .console-log {
+            flex: 1;
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.8rem;
+            overflow-y: auto;
+            color: #cbd5e1;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .console-entry {
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #1e293b;
+        }
+        .entry-time { color: var(--text-muted); font-size: 0.75rem; }
+        .entry-success { color: var(--success); }
+        .entry-error { color: var(--danger); }
+        .entry-warn { color: var(--warning); }
+        .entry-info { color: #60a5fa; }
+
+        .card-footer {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+        input[type="text"] {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>📦 LEI022 • Aula 5: APIs Assíncronas, WebSockets e AsyncAPI</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">
+                Demonstração interativa dos 4 mecanismos de comunicação para o evento <code>EncomendaExpedida</code>
+            </p>
+        </div>
+        <div class="header-actions">
+            <a href="/asyncapi.yaml" target="_blank" style="text-decoration: none;">
+                <button class="btn-outline">📄 AsyncAPI 3.0</button>
+            </a>
+            <a href="/docs" target="_blank" style="text-decoration: none;">
+                <button class="btn-outline">📚 OpenAPI /docs</button>
+            </a>
+        </div>
+    </header>
+
+    
+    <div class="order-control">
+        <div>
+            <div class="order-status">
+                Encomenda: <span style="color: #60a5fa;">ENC-1042</span>
+                <span id="order-status-badge" class="status-pill status-prep">em preparação</span>
+            </div>
+            <p id="order-meta" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">
+                Transportadora: Nenhuma | Atualizado: Carregando...
+            </p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+            <button class="btn-success" onclick="expedirEncomenda()">
+                🚀 Expedir Encomenda (Comando)
+            </button>
+            <button class="btn-danger" onclick="testarPayloadInvalidoWS()">
+                ⚠️ Testar Payload Inválido (WS)
+            </button>
+            <button class="btn-outline" onclick="resetEncomenda()">
+                🔄 Reiniciar Estado (Reset)
+            </button>
+        </div>
+    </div>
+
+    
+    <div class="mechanisms-grid">
+
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">⏱️ 1. Polling HTTP</div>
+                <span class="badge">Parte B (Pull)</span>
+            </div>
+            <div class="metric-row">
+                <span>Pedidos Totais: <span id="poll-count" class="metric-value">0</span></span>
+                <span>Desperdício: <span id="poll-waste" class="metric-value">0%</span></span>
+            </div>
+            <div id="poll-log" class="console-log"></div>
+            <div class="card-footer">
+                <button id="poll-btn-toggle" class="btn-outline" onclick="togglePolling()" style="width: 100%;">
+                    ⏸️ Pausar Polling (5s)
+                </button>
+            </div>
+        </div>
+
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">📡 2. Server-Sent Events</div>
+                <span class="badge" style="background: #10b981;">Parte C (Push)</span>
+            </div>
+            <div class="metric-row">
+                <span>Ligação: <span id="sse-status" class="metric-value" style="color: #10b981;">Conectado (1 req)</span></span>
+                <span>Eventos: <span id="sse-count" class="metric-value">0</span></span>
+            </div>
+            <div id="sse-log" class="console-log"></div>
+            <div class="card-footer">
+                <button class="btn-outline" onclick="reconectarSSE()" style="width: 100%;">
+                    🔄 Reconectar Stream SSE
+                </button>
+            </div>
+        </div>
+
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">⚡ 3. WebSocket</div>
+                <span class="badge" style="background: #8b5cf6;">Parte D (Full-Duplex)</span>
+            </div>
+            <div class="metric-row">
+                <span>Estado: <span id="ws-status" class="metric-value" style="color: #8b5cf6;">A ligar...</span></span>
+                <span>Mensagens: <span id="ws-count" class="metric-value">0</span></span>
+            </div>
+            <div id="ws-log" class="console-log"></div>
+            <div class="card-footer">
+                <input type="text" id="ws-input" placeholder="Mensagem personalizada ou JSON..." onkeypress="if(event.key==='Enter') enviarMensagemWS()">
+                <button onclick="enviarMensagemWS()">Enviar</button>
+            </div>
+        </div>
+
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🪝 4. Webhook HTTP</div>
+                <span class="badge" style="background: #f59e0b;">Parte E (Server-to-Server)</span>
+            </div>
+            <div class="metric-row">
+                <span>Destino: <span class="metric-value">porta 5001</span></span>
+                <span>Disparos: <span id="wh-count" class="metric-value">0</span></span>
+            </div>
+            <div id="wh-log" class="console-log"></div>
+            <div class="card-footer">
+                <button class="btn-outline" onclick="atualizarHistoricoWebhooks()" style="width: 100%;">
+                    🔍 Atualizar Histórico Webhook
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const ORDER_ID = "ENC-1042";
+        let pollTimer = null;
+        let pollingAtivo = true;
+        let pollTotal = 0;
+        let pollInalterados = 0;
+        let ultimoEstadoPoll = null;
+
+        let sseSource = null;
+        let sseCount = 0;
+
+        let ws = null;
+        let wsCount = 0;
+
+        function logToConsole(elementId, text, type = 'info') {
+            const el = document.getElementById(elementId);
+            const entry = document.createElement('div');
+            entry.className = 'console-entry';
+            const time = new Date().toLocaleTimeString();
+            let colorClass = 'entry-info';
+            if (type === 'success') colorClass = 'entry-success';
+            if (type === 'error') colorClass = 'entry-error';
+            if (type === 'warn') colorClass = 'entry-warn';
+
+            entry.innerHTML = `<span class="entry-time">[${time}]</span> <span class="${colorClass}">${text}</span>`;
+            el.appendChild(entry);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        async function expedirEncomenda() {
+            try {
+                const resp = await fetch(`/api/encomendas/${ORDER_ID}/expedir?transportadora=RotaSul`, { method: 'POST' });
+                const dados = await resp.json();
+                atualizarBanner(dados.estadoAtual);
+                logToConsole('ws-log', `Comando Expedir executado via REST! Evento gerado: ${dados.evento.eventoId}`, 'success');
+            } catch (err) {
+                alert("Falha ao expedir: " + err.message);
+            }
+        }
+
+        async function resetEncomenda() {
+            try {
+                const resp = await fetch(`/api/encomendas/${ORDER_ID}/reset`, { method: 'POST' });
+                const dados = await resp.json();
+                atualizarBanner(dados.encomenda);
+                pollTotal = 0;
+                pollInalterados = 0;
+                ultimoEstadoPoll = null;
+                document.getElementById('poll-count').innerText = "0";
+                document.getElementById('poll-waste').innerText = "0%";
+                logToConsole('poll-log', '--- Estado da encomenda reiniciado para [em preparação] ---', 'warn');
+                logToConsole('sse-log', '--- Estado reiniciado ---', 'warn');
+                logToConsole('ws-log', '--- Estado reiniciado ---', 'warn');
+            } catch (err) {
+                alert("Falha ao reiniciar: " + err.message);
+            }
+        }
+
+        function atualizarBanner(encomenda) {
+            const badge = document.getElementById('order-status-badge');
+            const meta = document.getElementById('order-meta');
+            badge.innerText = encomenda.estado;
+            if (encomenda.estado === 'expedida') {
+                badge.className = 'status-pill status-exp';
+            } else {
+                badge.className = 'status-pill status-prep';
+            }
+            meta.innerText = `Transportadora: ${encomenda.transportadora || 'Nenhuma'} | Atualizado em: ${encomenda.atualizadoEm}`;
+        }
+
+        async function executarPoll() {
+            if (!pollingAtivo) return;
+            pollTotal++;
+            document.getElementById('poll-count').innerText = pollTotal;
+
+            try {
+                const t0 = performance.now();
+                const resp = await fetch(`/api/encomendas/${ORDER_ID}`);
+                const ms = Math.round(performance.now() - t0);
+                const dados = await resp.json();
+
+                atualizarBanner(dados);
+
+                if (ultimoEstadoPoll === null) {
+                    ultimoEstadoPoll = dados.estado;
+                    logToConsole('poll-log', `Pedido #${pollTotal} (${ms}ms): Estado Inicial = '${dados.estado}'`, 'info');
+                } else if (dados.estado === ultimoEstadoPoll) {
+                    pollInalterados++;
+                    const pct = Math.round((pollInalterados / pollTotal) * 100);
+                    document.getElementById('poll-waste').innerText = `${pct}%`;
+                    logToConsole('poll-log', `Pedido #${pollTotal} (${ms}ms): '${dados.estado}' (Sem alteração)`, 'warn');
+                } else {
+                    logToConsole('poll-log', `🚨 ALTERAÇÃO DETETADA no Pedido #${pollTotal} (${ms}ms): '${ultimoEstadoPoll}' ➔ '${dados.estado}'`, 'success');
+                    ultimoEstadoPoll = dados.estado;
+                }
+            } catch (e) {
+                logToConsole('poll-log', `Erro na consulta HTTP: ${e.message}`, 'error');
+            }
+        }
+
+        function togglePolling() {
+            pollingAtivo = !pollingAtivo;
+            const btn = document.getElementById('poll-btn-toggle');
+            if (pollingAtivo) {
+                btn.innerText = "⏸️ Pausar Polling (5s)";
+                btn.className = "btn-outline";
+            } else {
+                btn.innerText = "▶️ Retomar Polling (5s)";
+                btn.className = "btn-success";
+            }
+        }
+
+        function iniciarSSE() {
+            if (sseSource) sseSource.close();
+            logToConsole('sse-log', 'A estabelecer stream text/event-stream...', 'info');
+
+            sseSource = new EventSource(`/api/encomendas/${ORDER_ID}/sse`);
+
+            sseSource.onopen = () => {
+                document.getElementById('sse-status').innerText = 'Conectado (Stream Ativo)';
+                document.getElementById('sse-status').style.color = '#10b981';
+                logToConsole('sse-log', 'Ligação HTTP persistente SSE aberta.', 'success');
+            };
+
+            sseSource.addEventListener('estadoAtual', (e) => {
+                const dados = JSON.parse(e.data);
+                logToConsole('sse-log', `[Estado Atual Inicial]: ${dados.estado}`, 'info');
+                atualizarBanner(dados);
+            });
+
+            sseSource.addEventListener('EncomendaExpedida', (e) => {
+                sseCount++;
+                document.getElementById('sse-count').innerText = sseCount;
+                const dados = JSON.parse(e.data);
+                logToConsole('sse-log', `🎉 EVENTO RECEBIDO EM TEMPO REAL!\nTipo: ${dados.tipo}\nID: ${dados.eventoId}\nTransportadora: ${dados.transportadora}`, 'success');
+                atualizarBanner({ estado: 'expedida', transportadora: dados.transportadora, atualizadoEm: dados.instante });
+            });
+
+            sseSource.onerror = () => {
+                document.getElementById('sse-status').innerText = 'Desconectado / A reconectar';
+                document.getElementById('sse-status').style.color = '#ef4444';
+            };
+        }
+
+        function reconectarSSE() {
+            iniciarSSE();
+        }
+
+        function iniciarWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/encomendas`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                document.getElementById('ws-status').innerText = 'Conectado (Full-Duplex)';
+                document.getElementById('ws-status').style.color = '#10b981';
+                logToConsole('ws-log', 'WebSocket conectado a /ws/encomendas', 'success');
+            };
+
+            ws.onmessage = (event) => {
+                wsCount++;
+                document.getElementById('ws-count').innerText = wsCount;
+                try {
+                    const obj = JSON.parse(event.data);
+                    if (obj.erro) {
+                        logToConsole('ws-log', `❌ REJEITADO PELO SERVIDOR:\n${obj.erro} - ${obj.detalhe}`, 'error');
+                    } else if (obj.tipo === 'EncomendaExpedida') {
+                        logToConsole('ws-log', `📢 BROADCAST RECEBIDO:\nEncomenda: ${obj.encomendaId} expedida via ${obj.transportadora} (${obj.eventoId})`, 'success');
+                        atualizarBanner({ estado: 'expedida', transportadora: obj.transportadora, atualizadoEm: obj.instante });
+                    } else {
+                        logToConsole('ws-log', `Recebido: ${event.data}`, 'info');
+                    }
+                } catch (e) {
+                    logToConsole('ws-log', `Recebido (texto): ${event.data}`, 'info');
+                }
+            };
+
+            ws.onclose = () => {
+                document.getElementById('ws-status').innerText = 'Fechado';
+                document.getElementById('ws-status').style.color = '#ef4444';
+                logToConsole('ws-log', 'Ligação WebSocket encerrada.', 'warn');
+                setTimeout(iniciarWebSocket, 4000);
+            };
+        }
+
+        function enviarMensagemWS() {
+            const input = document.getElementById('ws-input');
+            const texto = input.value.trim();
+            if (!texto) return;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(texto);
+                logToConsole('ws-log', `Enviado: ${texto}`, 'info');
+                input.value = '';
+            } else {
+                alert("WebSocket não está conectado.");
+            }
+        }
+
+        function testarPayloadInvalidoWS() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const payloadInvalido = {
+                    tipo: "EncomendaExpedida",
+                    encomendaId: ORDER_ID
+                };
+                const msg = JSON.stringify(payloadInvalido);
+                logToConsole('ws-log', `A enviar payload inválido intencional:\n${msg}`, 'warn');
+                ws.send(msg);
+            } else {
+                alert("WebSocket não está conectado.");
+            }
+        }
+
+        async function atualizarHistoricoWebhooks() {
+            try {
+                const resp = await fetch('/api/webhook/historico');
+                const historico = await resp.json();
+                document.getElementById('wh-count').innerText = historico.length;
+                const log = document.getElementById('wh-log');
+                log.innerHTML = '';
+
+                if (historico.length === 0) {
+                    logToConsole('wh-log', 'Nenhum envio de webhook registado ainda. Clique em "Expedir Encomenda" para disparar!', 'info');
+                    return;
+                }
+
+                historico.forEach((reg, i) => {
+                    const statusStr = reg.sucesso ? '✅ SUCESSO' : '❌ FALHOU';
+                    const tipoLog = reg.sucesso ? 'success' : 'error';
+                    logToConsole('wh-log', `#${i+1} [${statusStr}] Evento: ${reg.eventoId}\nTentativas: ${reg.tentativas} | URL: ${reg.url}`, tipoLog);
+                });
+            } catch (e) {
+                logToConsole('wh-log', `Falha ao ler histórico: ${e.message}`, 'error');
+            }
+        }
+
+        window.onload = () => {
+            executarPoll();
+            pollTimer = setInterval(executarPoll, 5000);
+
+            iniciarSSE();
+
+            iniciarWebSocket();
+
+            atualizarHistoricoWebhooks();
+            setInterval(atualizarHistoricoWebhooks, 6000);
+        };
+    </script>
+</body>
+</html>

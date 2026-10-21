@@ -1,0 +1,65 @@
+{
+  "descricao": "Conjunto de payloads de teste para validação de contratos assíncronos (Aula 5)",
+  "payload_valido": {
+    "tipo": "EncomendaExpedida",
+    "eventoId": "EVT-1001",
+    "encomendaId": "ENC-1042",
+    "instante": "2026-10-19T14:00:00Z",
+    "transportadora": "RotaSul"
+  },
+  "payloads_invalidos": [
+    {
+      "cenario": "Falta do campo obrigatório 'transportadora'",
+      "payload": {
+        "tipo": "EncomendaExpedida",
+        "eventoId": "EVT-1002",
+        "encomendaId": "ENC-1042",
+        "instante": "2026-10-19T14:05:00Z"
+      },
+      "motivo_rejeicao": "Campo obrigatório 'transportadora' ausente no payload."
+    },
+    {
+      "cenario": "Tipo de evento incorreto / desconhecido",
+      "payload": {
+        "tipo": "PedidoCancelado",
+        "eventoId": "EVT-1003",
+        "encomendaId": "ENC-1042",
+        "instante": "2026-10-19T14:10:00Z",
+        "transportadora": "RotaSul"
+      },
+      "motivo_rejeicao": "O campo 'tipo' tem de ser estritamente 'EncomendaExpedida'."
+    },
+    {
+      "cenario": "Formato de data/hora (instante) inválido (sem ISO 8601)",
+      "payload": {
+        "tipo": "EncomendaExpedida",
+        "eventoId": "EVT-1004",
+        "encomendaId": "ENC-1042",
+        "instante": "19 de Outubro de 2026 às 14h",
+        "transportadora": "RotaSul"
+      },
+      "motivo_rejeicao": "O campo 'instante' tem de cumprir a especificação ISO 8601 com fuso horário (ex: '2026-10-19T14:00:00Z')."
+    },
+    {
+      "cenario": "Falta de identificador único 'eventoId' (impossibilita deduplicação)",
+      "payload": {
+        "tipo": "EncomendaExpedida",
+        "encomendaId": "ENC-1042",
+        "instante": "2026-10-19T14:15:00Z",
+        "transportadora": "RotaSul"
+      },
+      "motivo_rejeicao": "Campo obrigatório 'eventoId' em falta; viola o contrato de idempotência."
+    },
+    {
+      "cenario": "Tipos primitivos incorretos (número em vez de string)",
+      "payload": {
+        "tipo": "EncomendaExpedida",
+        "eventoId": 1005,
+        "encomendaId": 1042,
+        "instante": "2026-10-19T14:20:00Z",
+        "transportadora": 999
+      },
+      "motivo_rejeicao": "Os campos 'eventoId', 'encomendaId' e 'transportadora' devem ser strings."
+    }
+  ]
+}

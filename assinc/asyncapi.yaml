@@ -1,0 +1,100 @@
+asyncapi: 3.0.0
+info:
+  title: API de Eventos de Encomendas
+  version: 1.0.0
+  description: >
+    Contrato formal de API Assíncrona orientada a eventos para notificação de
+    alteração de estado de encomendas (Aula 5 - LEI022).
+    Descreve o canal lógico, as mensagens JSON e as operações de envio e receção.
+
+defaultContentType: application/json
+
+channels:
+  encomendaExpedida:
+    address: encomenda/expedida
+    title: Canal de Notificação de Encomenda Expedida
+    summary: Canal lógico onde os eventos de expedição são emitidos e consumidos.
+    description: >
+      Permite aos clientes (painéis de clientes, serviço de notificações e logística)
+      receber em tempo real o evento EncomendaExpedida através de SSE, WebSocket ou Webhook.
+    messages:
+      encomendaExpedidaMsg:
+        $ref: '#/components/messages/EncomendaExpedida'
+
+operations:
+  receberExpedicao:
+    action: receive
+    channel:
+      $ref: '#/channels/encomendaExpedida'
+    title: Receber Notificação de Expedição
+    summary: Operação executada pelos consumidores (clientes) ao escutar o canal.
+    description: >
+      O cliente regista-se no canal (via SSE, WebSocket ou endpoint Webhook) e recebe
+      a notificação assíncrona com o payload do evento.
+    messages:
+      - $ref: '#/channels/encomendaExpedida/messages/encomendaExpedidaMsg'
+
+  enviarExpedicao:
+    action: send
+    channel:
+      $ref: '#/channels/encomendaExpedida'
+    title: Publicar Notificação de Expedição
+    summary: Operação executada pelo produtor (Serviço de Armazém/Backend).
+    description: >
+      Quando o comando ExpedirEncomenda é executado com sucesso e o estado passa
+      a «expedida», o produtor difunde este evento para todos os canais associados.
+    messages:
+      - $ref: '#/channels/encomendaExpedida/messages/encomendaExpedidaMsg'
+
+components:
+  messages:
+    EncomendaExpedida:
+      name: EncomendaExpedida
+      title: Evento EncomendaExpedida
+      summary: Contrato da mensagem emitida quando a encomenda é expedida pelo armazém.
+      contentType: application/json
+      payload:
+        schema:
+          type: object
+          additionalProperties: false
+          required:
+            - tipo
+            - eventoId
+            - encomendaId
+            - instante
+            - transportadora
+          properties:
+            tipo:
+              type: string
+              const: EncomendaExpedida
+              description: Identificador formal do tipo de evento.
+              example: EncomendaExpedida
+            eventoId:
+              type: string
+              pattern: '^EVT-[0-9]+$'
+              description: Identificador único da mensagem para deduplicação e idempotência.
+              example: EVT-1001
+            encomendaId:
+              type: string
+              pattern: '^ENC-[0-9]+$'
+              description: Identificador da encomenda associada.
+              example: ENC-1042
+            instante:
+              type: string
+              format: date-time
+              description: Timestamp ISO 8601 com timezone explícito (ex: UTC com 'Z').
+              example: '2026-10-19T14:00:00Z'
+            transportadora:
+              type: string
+              minLength: 2
+              description: Nome da empresa transportadora encarregada da expedição.
+              example: RotaSul
+      examples:
+        - name: ExemploExpedicaoValida
+          summary: Exemplo de evento válido conforme o contrato
+          payload:
+            tipo: EncomendaExpedida
+            eventoId: EVT-1001
+            encomendaId: ENC-1042
+            instante: '2026-10-19T14:00:00Z'
+            transportadora: RotaSul
