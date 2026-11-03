@@ -1,0 +1,98 @@
+### Verificar serviço
+GET http://localhost:3000/health
+
+### Listar estudantes
+GET http://localhost:3000/api/students
+
+### Filtrar por nome
+GET http://localhost:3000/api/students?name=ana
+
+### Listar estudantes com inscrições (exemplo de include)
+GET http://localhost:3000/api/students?include=enrolments
+
+### Criar estudante
+POST http://localhost:3000/api/students
+Content-Type: application/json
+
+{
+  "name": "Maria Oliveira",
+  "email": "maria@exemplo.pt"
+}
+
+### Criar UC
+POST http://localhost:3000/api/courses
+Content-Type: application/json
+
+{
+  "code": "LEI099",
+  "name": "Engenharia de Software",
+  "ects": 6
+}
+
+### Criar inscrição (substituir IDs pelos valores reais)
+POST http://localhost:3000/api/enrolments
+Content-Type: application/json
+
+{
+  "studentId": 1,
+  "courseId": 1
+}
+
+### Atualizar estudante — version deve ser a versão devolvida pela API
+PUT http://localhost:3000/api/students/1
+Content-Type: application/json
+
+{
+  "name": "Maria O.",
+  "email": "maria@exemplo.pt",
+  "version": 1
+}
+
+### Erro sintático/estrutural: esperado 400 Bad Request
+POST http://localhost:3000/api/students
+Content-Type: application/json
+
+{
+  "name": "M",
+  "email": "invalido"
+}
+
+### Erro de conflito: duplicação de email (esperado 409 Conflict)
+POST http://localhost:3000/api/students
+Content-Type: application/json
+
+{
+  "name": "Outra Maria",
+  "email": "maria@exemplo.pt"
+}
+
+### Concorrência otimista: tentar atualizar com versão desatualizada (esperado 409 Conflict - STALE_VERSION)
+PUT http://localhost:3000/api/students/1
+Content-Type: application/json
+
+{
+  "name": "Maria Conflito",
+  "email": "maria@exemplo.pt",
+  "version": 1
+}
+
+### Transação: tentar inscrever estudante inexistente (esperado 404 Not Found)
+POST http://localhost:3000/api/enrolments
+Content-Type: application/json
+
+{
+  "studentId": 9999,
+  "courseId": 1
+}
+
+### Atribuir nota a uma inscrição
+PATCH http://localhost:3000/api/enrolments/1/grade
+Content-Type: application/json
+
+{
+  "grade": 17.5
+}
+
+### Remover estudante
+DELETE http://localhost:3000/api/students/1
+

@@ -1,0 +1,349 @@
+{
+	"info": {
+		"_postman_id": "lei022-topicos-6-7-8-collection",
+		"name": "LEI022 — Aula 6: Persistência, ORM, Concorrência e Transações",
+		"description": "Coleção de apoio à Aula Prática 6 da UC LEI022 (Persistência com Prisma, PostgreSQL, Zod e Concorrência Otimista)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "courseId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "enrolmentId",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": ["{{baseUrl}}"],
+					"path": ["health"]
+				}
+			}
+		},
+		{
+			"name": "2. Estudantes",
+			"item": [
+				{
+					"name": "Listar Estudantes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/students",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students"]
+						}
+					}
+				},
+				{
+					"name": "Listar Estudantes com Inscrições (?include=enrolments)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/students?include=enrolments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students"],
+							"query": [
+								{
+									"key": "include",
+									"value": "enrolments"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filtrar por Nome (?name=ana)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/students?name=ana",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students"],
+							"query": [
+								{
+									"key": "name",
+									"value": "ana"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Obter Estudante por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/students/{{studentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students", "{{studentId}}"]
+						}
+					}
+				},
+				{
+					"name": "Criar Estudante (POST)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Maria Silva\",\n  \"email\": \"maria.silva@exemplo.pt\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students"]
+						}
+					}
+				},
+				{
+					"name": "Atualizar Estudante com Versão (PUT Concorrência)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Maria Silva Atualizada\",\n  \"email\": \"maria.silva@exemplo.pt\",\n  \"version\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students/{{studentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students", "{{studentId}}"]
+						}
+					}
+				},
+				{
+					"name": "Remover Estudante (DELETE)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/students/{{studentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students", "{{studentId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Unidades Curriculares (Courses)",
+			"item": [
+				{
+					"name": "Listar UCs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/courses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "courses"]
+						}
+					}
+				},
+				{
+					"name": "Criar UC (POST)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"LEI099\",\n  \"name\": \"Engenharia de Software\",\n  \"ects\": 6\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/courses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "courses"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Inscrições e Transações",
+			"item": [
+				{
+					"name": "Criar Inscrição Atómica (POST $transaction)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentId\": 1,\n  \"courseId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/enrolments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "enrolments"]
+						}
+					}
+				},
+				{
+					"name": "Atribuir Classificação (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"grade\": 17.5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/enrolments/{{enrolmentId}}/grade",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "enrolments", "{{enrolmentId}}", "grade"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Casos de Teste de Erro (HTTP Status)",
+			"item": [
+				{
+					"name": "Erro 400 — Validação Zod (Campos Inválidos)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"M\",\n  \"email\": \"email-invalido\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students"]
+						}
+					}
+				},
+				{
+					"name": "Erro 404 — Recurso Inexistente",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/students/99999",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students", "99999"]
+						}
+					}
+				},
+				{
+					"name": "Erro 409 — Conflito de Chave Única (Email Duplicado)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Outra Ana\",\n  \"email\": \"ana@exemplo.pt\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students"]
+						}
+					}
+				},
+				{
+					"name": "Erro 409 — Concorrência Otimista (STALE_VERSION)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Conflito Otimista\",\n  \"email\": \"ana@exemplo.pt\",\n  \"version\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "students", "1"]
+						}
+					}
+				},
+				{
+					"name": "Erro 404 — Transação: Estudante Inexistente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentId\": 99999,\n  \"courseId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/enrolments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "enrolments"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
